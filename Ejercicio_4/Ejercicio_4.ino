@@ -1,31 +1,38 @@
 /*
-Ejercicio 1
+Grupo 3
 Cordoni
-Laist
+Lichtenstein
+López
+
+Ejercicio 4
 */
 
 //tipos de variables
 typedef enum {
-  Espera1,
-  Espera2,
   P1,
   P2,
-  EsperaAumento,
-  EsperaDsiminucion
+  espera1,
+  espera2,
+  esperaAumento,
+  esperaDsiminucion
 } tipoEstado;
 
 //funciones
+void maquinaDeEstados();
 
 //defines e includes
 #include <TimerOne.h>
 
-#define BOT1 3
-#define BOT2 4
+#define SWITCH_1  //pin
+#define SWITCH_2  //pin
 
 //variables
 tipoEstado estado = P1;
 
-int timerSeg = 0;
+int SW1;
+int SW2;
+
+float umbralGrados = 28.0;
 
 void setup() {
   //inicio
@@ -35,23 +42,72 @@ void setup() {
   Serial.println();
 
   //setup
-
-  //timerOne
-  Timer1.initialize(1000000);  //cada 1s
-  Timer1.attachInterrupt(timer);
+  pinMode(SWITCH_1, INPUT /*_PULLUP*/);
+  pinMode(SWITCH_2, INPUT /*_PULLUP*/);
 
   //máquina de estados
-  estado = ;
+  estado = P1;
 }
 
 void loop() {
-
-  switch (estado) {
-    case :
-      break;
-  }
+  SW1 = digitalRead(SWITCH_1);
+  SW2 = digitalRead(SWITCH_2);
+  maquinaDeEstados();
 }
 
-void timer() {
-  timerSeg++;
+
+
+void maquinaDeEstados() {
+  switch (estado) {
+    case P1:
+      //
+      if (SW1 == LOW && SW2 == LOW) {
+        estado = espera1;
+      }
+      break;
+    case espera1:
+      //
+      if (SW1 == HIGH && SW2 == HIGH) {
+        estado = P2;
+      }
+      break;
+    case P2:
+      //
+      if (SW1 == LOW && SW2 == LOW) {
+        estado = espera2;
+      }
+      if (SW1 == LOW && SW2 == HIGH) {
+        estado = esperaAumento;
+      }
+      if (SW1 == HIGH && SW2 == LOW) {
+        estado = esperaDisminucion;
+      }
+      break;
+    case espera2:
+      //
+      if (SW1 == HIGH && SW2 == HIGH) {
+        estado = P1;
+      }
+      break;
+    case esperaAumento:
+      //
+      if (SW1 == HIGH && SW2 == HIGH) {
+        estado = espera2;
+      }
+      if (SW1 == LOW && SW2 == LOW) {
+        umbralGrados++;
+        estado = P2;
+      }
+      break;
+    case esperaDisminucion:
+      //
+      if (SW1 == HIGH && SW2 == HIGH) {
+        estado = espera2;
+      }
+      if (SW1 == LOW && SW2 == LOW) {
+        umbralGrados--;
+        estado = P2;
+      }
+      break;
+  }
 }
