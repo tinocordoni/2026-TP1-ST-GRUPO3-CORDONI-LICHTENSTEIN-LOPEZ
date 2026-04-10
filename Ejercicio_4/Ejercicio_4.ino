@@ -16,7 +16,7 @@ Ejercicio 4
 #define SWITCH_2 34
 
 #define LED 25
-#define DHTPIN 230
+#define DHTPIN 23
 #define DHTTYPE DHT11
 
 //tipos de variables
