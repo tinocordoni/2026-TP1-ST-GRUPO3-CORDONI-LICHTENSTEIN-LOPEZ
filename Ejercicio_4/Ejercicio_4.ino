@@ -11,13 +11,12 @@ Ejercicio 4
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <U8g2lib.h>
-#include <TimerOne.h>
 
 #define SWITCH_1 35
 #define SWITCH_2 34
 
-#define LED 23
-#define DHTPIN 24
+#define LED 25
+#define DHTPIN 230
 #define DHTTYPE DHT11
 
 //tipos de variables
@@ -48,8 +47,7 @@ int SW2;
 
 float umbralGrados = 28.0;
 
-float temperatura;
-int segundos = 0;
+float hic;
 
 void setup() {
   //inicio
@@ -58,9 +56,6 @@ void setup() {
   Serial.println("Inicio \n________");
   Serial.println();
 
-  //timer1
-  Timer1.initialize(1000000);  //1 segundo
-  Timer1.attachInterrupt(timer);
   //setup
   pinMode(SWITCH_1, INPUT);
   pinMode(SWITCH_2, INPUT);
@@ -79,18 +74,16 @@ void loop() {
   SW1 = digitalRead(SWITCH_1);
   SW2 = digitalRead(SWITCH_2);
 
-  if (segundos >= 2) {
-    temperatura = dht.readTemperature();
-    segundos = 0;
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+  if (isnan(t) || isnan(h)){
+    return;
   }
-
+  hic = dht.computeHeatIndex(t, h, false);
   maquinaDeEstados();
   controlLed();
 }
 
-void timer() {
-  segundos++;
-}
 void maquinaDeEstados() {
   switch (estado) {
     case P1:
@@ -154,16 +147,16 @@ void maquinaDeEstados() {
 
 void imprimirTemperaturaYUmbral() {
   u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
 
   u8g2.drawStr(0, 20, "Actual:");
   char stringTemp[10];
-  sprintf(stringTemp, "%.1fC", temperatura);
+  sprintf(stringTemp, "%.1f", hic);
   u8g2.drawStr(80, 20, stringTemp);
 
   u8g2.drawStr(0, 40, "Umbral:");
   char stringUmb[10];
-  sprintf(stringUmb, "%.1fC", umbralGrados);
+  sprintf(stringUmb, "%.1f", umbralGrados);
   u8g2.drawStr(80, 40, stringUmb);
 
   u8g2.sendBuffer();
@@ -171,18 +164,20 @@ void imprimirTemperaturaYUmbral() {
 
 void imprimirUmbral() {
   u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
 
   u8g2.drawStr(0, 40, "Umbral:");
   char stringUmb[10];
-  sprintf(stringUmb, "%.1fC", umbralGrados);
+  sprintf(stringUmb, "%.1f", umbralGrados);
   u8g2.drawStr(80, 40, stringUmb);  // alineado igual
 
   u8g2.sendBuffer();
 }
 
 void controlLed() {
-  if (temperatura >= umbralGrados) {
+  if (hic >= umbralGrados) {
     digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
   }
 }
