@@ -30,6 +30,7 @@ typedef enum {
 } tipoEstado;
 
 //funciones
+void medirTemperatura();
 void maquinaDeEstados();
 void imprimirTemperaturaYUmbral();
 void imprimirUmbral();
@@ -73,15 +74,19 @@ void setup() {
 void loop() {
   SW1 = digitalRead(SWITCH_1);
   SW2 = digitalRead(SWITCH_2);
-
-  float t = dht.readTemperature();
-  float h = dht.readHumidity();
-  if (isnan(t) || isnan(h)){
-    return;
-  }
-  hic = dht.computeHeatIndex(t, h, false);
+  medirTemperatura();
   maquinaDeEstados();
   controlLed();
+}
+
+void medirTemperatura() { //mide la temperatura en una función para que no se trabe el 
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+  if (isnan(t) || isnan(h)) {
+    return;
+  } else {
+    hic = dht.computeHeatIndex(t, h, false);
+  }
 }
 
 void maquinaDeEstados() {
